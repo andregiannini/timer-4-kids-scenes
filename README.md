@@ -7,7 +7,7 @@ in that repository. App code, draft artwork, signing files, and credentials stay
 
 The app reads `releases/download/catalog/catalog.json`, then fetches the immutable
 release named `<scene-id>-r<revision>`. Each release contains `scene.json` and its
-PNG/JPEG images. SHA-256 hashes and byte counts are verified before a scene appears.
+PNG/JPEG images and optional Lottie JSON. SHA-256 hashes and byte counts are verified before a scene appears.
 
 ## Publishing an approved scene
 
@@ -42,7 +42,7 @@ Required manifest fields:
 - `background`: six RGB hex digits, without `#`
 - `icon`: a filename from `assets`
 - `canvasWidth`, `canvasHeight`: reference canvas size, each at most 4096
-- `assets`: `{file, sha256, bytes}` records; PNG/JPEG, maximum 20 MB per file,
+- `assets`: `{file, sha256, bytes}` records; PNG/JPEG or Lottie JSON, maximum 20 MB per image,
   80 files and 80 MB per pack
 - `layers`: back-to-front `{asset, center:{x,y}, width, height, opacity}` records
 - `lights`: `{points:[{x,y},...], color, width, bulbRadius, bulbCount}` records;
@@ -54,7 +54,7 @@ Required manifest fields:
 
 Optional layer fields: `revealFrom`, `revealUntil` (bottom-up reveal between timer
 fractions), `glow` (0–40), `twinkle` (boolean). Finale layers use those same fields.
-The app's existing completion sound is shared by all scenes. Version 1 does not
+The app's existing completion sound is shared by all scenes. The player does not
 execute downloaded scripts and does not support custom audio files.
 
 Christmas can use a snowy background/tree layer, a winding light path, a Santa
@@ -109,3 +109,40 @@ an existing user's saved pack. Keep already-published assets available.
 
 No analytics or identifying query parameters are added. GitHub necessarily receives
 ordinary network connection information, such as IP address, when serving files.
+
+## Lottie animation packs (build 13 and later)
+
+Standard Lottie JSON can carry the complete drawing and keyframe choreography.
+Add an `animation` object to `scene.json`:
+
+```json
+{
+  "animation": {
+    "progress": "tree-progress.json",
+    "events": [{"file": "sleigh.json", "trigger": 0.5, "duration": 5}],
+    "completion": "celebration.json",
+    "completionDuration": 3
+  }
+}
+```
+
+The progress file follows timer progress. Each event gets its own playback clock
+in seconds beginning at its trigger fraction, so a longer timer does not slow
+Santa's crossing. The completion file gets an independent clock after time ends.
+Pause freezes progress and events. Reset clears the clocks. Set `finaleDuration`
+to at least `completionDuration` to show the celebration before the menu button.
+
+List every JSON file and referenced PNG/JPEG in `assets`. The icon must remain a
+PNG/JPEG. Keep all animation canvases equal to `canvasWidth`/`canvasHeight`.
+JSON files are limited to 2 MB each. Reference image assets by their bare listed
+filename with an empty `u` directory field. Remote URLs, embedded image data,
+external fonts and animation expressions are not accepted. `scene.json`,
+`manifest.json` and `installed.json` are reserved metadata filenames, not assets.
+Native executable code and scripts are never part of a pack.
+
+For Lottie packs, the legacy `layers`, `lights`, `events`, and `finale` arrays can
+be empty. The packaging tool supplies empty arrays when omitted. All timing and
+artwork still need visual review on a phone before publication. New runtime
+capabilities outside Lottie's supported feature set may still require an app update.
+The prototype fixture files in the private app project are not approved artwork
+and must not be published.

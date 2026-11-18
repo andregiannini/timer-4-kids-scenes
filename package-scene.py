@@ -5,6 +5,7 @@ import hashlib
 import json
 import pathlib
 import shutil
+import string
 
 parser = argparse.ArgumentParser()
 parser.add_argument('scene', type=pathlib.Path, help='Directory containing scene.json and referenced images')
@@ -22,7 +23,9 @@ assets = []
 for asset in manifest['assets']:
     name = asset['file']
     assert pathlib.Path(name).name == name and not name.startswith('.')
-    assert pathlib.Path(name).suffix.lower() in ('.png', '.jpg', '.jpeg')
+    assert len(name) <= 100 and all(c in string.ascii_letters + string.digits + '-_.' for c in name)
+    assert name.lower() not in ('manifest.json', 'installed.json', 'scene.json')
+    assert pathlib.Path(name).suffix.lower() in ('.png', '.jpg', '.jpeg', '.json')
     data = (args.scene / name).read_bytes()
     assert 0 < len(data) <= 20_000_000
     assets.append(dict(file=name, bytes=len(data), sha256=hashlib.sha256(data).hexdigest()))
@@ -30,6 +33,12 @@ for asset in manifest['assets']:
 assert len({a['file'] for a in assets}) == len(assets) and len(assets) <= 80
 assert sum(a['bytes'] for a in assets) <= 80_000_000
 manifest['assets'] = assets
+if manifest.get('animation'):
+    manifest['animation'].setdefault('events', [])
+    manifest['animation'].setdefault('completionDuration', 3)
+    for field in ('layers', 'lights', 'events', 'finale'):
+        manifest.setdefault(field, [])
+    manifest.setdefault('finaleDuration', manifest['animation']['completionDuration'])
 # Non-optional opacity is explicit in the wire format.
 for layer in manifest['layers'] + manifest['finale']:
     layer.setdefault('opacity', 1)
