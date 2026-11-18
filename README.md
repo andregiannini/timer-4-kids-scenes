@@ -61,6 +61,43 @@ Christmas can use a snowy background/tree layer, a winding light path, a Santa
 sprite event at 0.5, and star/full-tree glow layers in the finale. This describes
 capabilities, not an approved Christmas design.
 
+## Seasonal menu ordering
+
+The catalog optionally includes a top-level `promotions` array, alongside `scenes`.
+It schedules ordering only; it never changes the selected scene or removes a scene.
+
+```json
+{
+  "schemaVersion": 1,
+  "scenes": [],
+  "promotions": [
+    {"sceneID": "builtin:hauntedHill", "annualMonth": 10, "annualDay": 31},
+    {"sceneID": "download:christmas", "annualMonth": 12, "annualDay": 25},
+    {"sceneID": "download:new-year", "annualMonth": 1, "annualDay": 1},
+    {"sceneID": "download:spring", "dates": ["2027-04-04", "2028-04-16"]}
+  ]
+}
+```
+
+These are format examples, not a list of released packs. Only installed scenes
+appear. The `spring` dates are illustrative explicit dates, not calculated holidays.
+Use `builtin:<stored identifier>` for bundled scenes and `download:<pack id>` for
+packs. Fixed holidays use month/day recurrence. Movable holidays use explicit
+Gregorian `YYYY-MM-DD` dates; update future dates in this catalog without an app
+update. Use either annual fields or `dates`, never both.
+
+Promotion begins 30 local calendar days before the holiday and lasts through the
+entire third local day afterward. The fourth day restores normal ordering. Among
+active holidays, the closest occurrence comes first; ties retain normal order.
+Then come unplayed new packs, then the normal stable scene order. A new seasonal
+pack shows `New`; an already-played seasonal scene shows `Seasonal` instead.
+
+Haunted Hill has a bundled October 31 schedule. A remote schedule for that same ID
+overrides it; `{"sceneID":"builtin:hauntedHill","dates":[]}` disables its promotion.
+Schedules are saved for offline use. If `promotions` is absent, existing saved
+schedules remain; old catalog files continue to work. Bad or duplicate schedules
+are rejected rather than replacing the last good saved schedule.
+
 ## Delivery behavior
 
 The app checks on launch, at most every six hours per process, and parents can
