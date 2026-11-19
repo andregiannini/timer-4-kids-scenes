@@ -1,4 +1,18 @@
 {
   "schemaVersion": 1,
-  "scenes": []
+  "scenes": [
+    {
+      "id": "christmas",
+      "revision": 1,
+      "manifest": "christmas-r1/scene.json",
+      "sha256": "ca8ca2649d9c5d31f714415473b0803b8e1ee3b7f3e360a9c1897ccbb2b99192"
+    }
+  ],
+  "promotions": [
+    {
+      "sceneID": "download:christmas",
+      "annualMonth": 12,
+      "annualDay": 25
+    }
+  ]
 }
