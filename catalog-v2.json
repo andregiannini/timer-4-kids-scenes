@@ -3,9 +3,9 @@
   "scenes": [
     {
       "id": "christmas",
-      "revision": 4,
-      "manifest": "christmas-r4/scene.json",
-      "sha256": "a98995e0d772341660e05af851e16a8108f4ab29e278acd8e6080179ff3377d5",
+      "revision": 5,
+      "manifest": "christmas-r5/scene.json",
+      "sha256": "b8e482848b0ccff2894c5c09c15b975623c526a1cd1e868263104c93a67c3d44",
       "minimumPlayerBuild": 15
     }
   ],
